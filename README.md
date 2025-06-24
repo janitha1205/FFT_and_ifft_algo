@@ -1,2 +1,4 @@
-# FFT_and_ifft_algo
+# FTT N IFFT
 time series analysis
+
+
