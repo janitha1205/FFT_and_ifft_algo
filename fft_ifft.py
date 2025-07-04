@@ -5,15 +5,15 @@ import matplotlib.pyplot as plt
 def signal1(t):
 
     tl = len(t)
-    x = np.random.randn(tl)
+    x = 1 * np.random.randn(tl)
     freq = 1.0
-    x += 3 * np.sin(2 * np.pi * freq * t)
+    x += 3 * np.sin(2 * np.pi * freq * np.asarray(t))
 
     freq = 4
-    x += np.sin(2 * np.pi * freq * t)
+    x += np.sin(2 * np.pi * freq * np.asarray(t))
 
     freq = 7
-    x += 3.5 * np.cos(2 * np.pi * freq * t)
+    x += 3.5 * np.sin(2 * np.pi * freq * np.asarray(t))
     return x
 
 
@@ -50,18 +50,22 @@ def fourier_mag_phase(func, T, num_terms, x_values, N):
         an = calculate_an(func, T, n, N)
         bn = calculate_bn(func, T, n, N)
         mag.append(np.sqrt(an**2 + bn**2))
-        ang.append(np.arctan2(bn, an))
+        ang.append(np.arctan2(an, bn))
         freq.append(n / T)
 
     return mag, ang, freq
 
 
 def inv_f(mag, ang, freq, x_values, num_terms):
-    approximation = mag[1] * np.ones_like(x_values)
-    for n in range(1, num_terms - 1):
-        approximation += mag[n + 1] * np.sin(
-            (2 * np.pi * freq[n + 1] * np.asarray(x_values)) + ang[n + 1]
+    mag1 = np.asarray(mag)
+    approximation = np.zeros(np.size(x_values))
+    for n in range(num_terms):
+        ind = np.argmax(mag1)
+        print(mag1[ind])
+        approximation += mag[ind] * np.sin(
+            (2 * np.pi * freq[ind] * np.asarray(x_values)) + ang[ind]
         )
+        mag1[ind] = 0
 
     return x_values, approximation
 
@@ -72,9 +76,10 @@ def main():
     N = 1000
     for i in range(N):
         t.append(i * dt - dt)
-    N_terms = 100
+    N_terms = 300
     mag, ang, freq = fourier_mag_phase(signal1, max(t), N_terms, t, N)
-    x_values, approximation = inv_f(mag, ang, freq, t, N_terms)
+    N_terms_ap = 3
+    x_values, approximation = inv_f(mag, ang, freq, t, N_terms_ap)
 
     plt.figure(figsize=(12, 10))
 
@@ -91,10 +96,14 @@ def main():
     plt.xlim(0, 10)
 
     plt.subplot(413)
+    plt.plot(t, signal1(t), "r")
+    plt.xlabel("Time(s)")
+    plt.ylabel("real signal")
+
+    plt.subplot(414)
     plt.plot(x_values, approximation, "y")
     plt.xlabel("Time(s)")
     plt.ylabel("Approximation")
-
     plt.show()
 
 
